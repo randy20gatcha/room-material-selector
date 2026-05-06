@@ -1,125 +1,98 @@
 # Room Material Selector
 
-A lightweight Vue 3 + **TypeScript** + Vite prototype where a user can:
+## Project overview
 
-- Select a room type (kitchen, bathroom, living room, bedroom, laundry).
-- Change a small list of mock materials and furniture (flooring, wall finish, benchtop, cabinetry, sofa, table, chair, bed, lighting, etc.).
+A lightweight Vue 3 + TypeScript prototype that lets a user:
+
+- Pick a room type — kitchen, bathroom, living room, bedroom, or laundry.
+- Configure a small list of mock materials and furniture for that room (flooring, wall finish, benchtop, cabinetry, sofa, table, chair, bed, lighting, etc.).
 - See a live summary of the room and its current selections.
-- Click **Generate AI Summary** to get a rule-based, AI-style write-up — cost tier, missing items, design issues, recommended next actions. No external AI service is used.
+- Click **Generate AI Summary** for a rule-based, AI-style write-up — overall cost tier, missing items, design notes, and recommended next actions.
 
-## Stack
+The "AI" is a deterministic rule engine that runs entirely in the browser. No external API calls, no API keys.
 
-- Vue 3 (Composition API, `<script setup lang="ts">`)
-- TypeScript (strict mode)
-- Vite
-- Plain CSS (no Tailwind / UI libraries — easy to read and modify)
-- Ready to deploy to Vercel as a static site
+## Technologies used
 
-## Run locally
+- **Vue 3** (Composition API, `<script setup lang="ts">`)
+- **TypeScript** (strict mode)
+- **Vite** (dev server + production bundler)
+- **vue-tsc** (type-checking before build)
+- **Plain CSS** with CSS variables (no Tailwind / no UI library)
+- **Vercel** for deployment (config included)
+
+## Setup instructions
+
+Prerequisites:
+
+- Node.js **18+** and npm (check with `node -v` and `npm -v`)
+- Git (only if cloning from a repo)
+
+Steps:
 
 ```bash
+# 1. Get the project
+git clone <your-repo-url> room-material-selector
+cd room-material-selector
+
+# 2. Install dependencies
 npm install
-npm run dev
 ```
 
-Then open the URL Vite prints (usually `http://localhost:5173`).
+That's it — no environment variables, no `.env` file, no backend to configure.
 
-## Build
+## How to run the application locally
 
 ```bash
-npm run build         # type-check (vue-tsc) then bundle (vite build)
-npm run preview       # optional — preview the production build
-npm run type-check    # type-check only, no bundle
-```
-
-The production build lands in `dist/`.
-
-## Deploy to Vercel
-
-The repo already includes a `vercel.json`, so deployment is one of:
-
-**Option A — Vercel Dashboard**
-
-1. Push this folder to a GitHub/GitLab/Bitbucket repo.
-2. Import the repo on https://vercel.com.
-3. Vercel auto-detects Vite. Defaults are fine:
-   - Build command: `npm run build`
-   - Output directory: `dist`
-4. Click **Deploy**.
-
-**Option B — Vercel CLI**
-
-```bash
-npm i -g vercel
-vercel        # follow the prompts (link/create project)
-vercel --prod # deploy production build
-```
-
-## Project layout
+npm run dev # Start dev server (Vite, hot reload) # Open http://localhost:5173
 
 ```
-room-material-selector/
-├── index.html
-├── package.json
-├── tsconfig.json
-├── tsconfig.node.json
-├── env.d.ts
-├── vite.config.ts
-├── vercel.json
-├── README.md
-└── src/
-    ├── main.ts
-    ├── App.vue
-    ├── style.css
-    ├── components/
-    │   ├── RoomSelector.vue
-    │   ├── MaterialSelector.vue
-    │   ├── SelectionSummary.vue
-    │   └── AISummary.vue
-    └── data/
-        ├── roomData.ts     # rooms + items + options + metadata, fully typed
-        └── aiSummary.ts    # rule-based mock AI engine, fully typed
-```
 
-## TypeScript notes
+## Assumptions made
 
-- Strict mode is on (`tsconfig.json` extends `@vue/tsconfig/tsconfig.dom.json`).
-- The data layer exports the core types you'll likely reuse: `RoomId`, `Room`, `Item`, `Option`, `CostTier`, `Tone`, `Selections`, `ResolvedItem`.
-- `aiSummary.ts` exports `Summary` and `SelectedRow` — the shape returned by `generateSummary()`.
-- Components use the type-only form of `defineProps` / `defineEmits`:
+- **The AI is mocked.** A pure function in `src/data/aiSummary.ts` returns a structured summary. The shape matches what a real LLM call would return, so swapping it for a serverless `/api/summarize` endpoint is a one-file change.
+- **The catalog is illustrative.** Materials, furniture, and cost tiers (low / medium / high) are demo data. There are no real prices, suppliers, or images.
+- **Cost tiers are relative, not absolute.** "High" means premium-tier within the catalog; the engine averages tiers to produce an overall tier, not a dollar figure.
+- **Session-only state.** Selections live in memory. Reloading the page clears them. A real app would persist per user.
+- **Single user, single browser tab.** No auth, no multi-user collaboration.
+- **Per-room isolation.** Switching rooms preserves work in the previous room within the same session.
+- **Modern browsers only.** Targeted at evergreen Chrome / Firefox / Safari / Edge — no IE polyfills.
 
-```ts
-defineProps<{ roomId: RoomId | ''; selections: Selections }>()
-defineEmits<{ (e: 'reset'): void }>()
-```
+## Simple testing instructions
 
-- `env.d.ts` has the Vite client reference and the `*.vue` shim so TypeScript understands `.vue` imports.
+There's no automated test suite yet. To verify the app manually:
 
-## How the mock AI works
+1. Run `npm run dev` and open the local URL.
+2. **Room switching** — Click each of the five room tiles. The selection panel on the left should swap to that room's items and the live summary on the right should update.
+3. **Selection updates** — Pick options from the dropdowns. Each pick should:
+   - Show a coloured cost pill (green / amber / red) next to the dropdown.
+   - Update the _Current selections_ card on the right immediately.
+4. **AI summary — basic** — Click **Generate AI Summary**. It should display headline, overall cost tier, selected items, missing items, issues, and recommendations.
+5. **AI summary — rule checks** (each should produce the noted output):
+   - Pick **marble** anywhere → the issues list flags marble's higher cost.
+   - Leave **lighting** unselected → the recommendations list nudges you to add lighting first.
+   - In the bedroom, pick **dark** flooring (e.g. walnut) **and** **dark** walls (e.g. charcoal) → issues list warns the room may feel dim.
+   - Pick three or more high-cost options → issues list flags the premium fit-out.
+   - Pick everything from a room → headline reads "scheme is complete" with the overall cost tier.
+6. **Reset** — Click _Reset_ in the materials panel. All selections for the current room clear; other rooms keep their state.
+7. **Responsive layout** — Resize the browser narrow (≤880 px). The two-column layout collapses into a single column.
 
-`src/data/aiSummary.ts` is a pure function. It looks at the user's
-selections and produces:
+## Limitations and possible improvements
 
-- An overall cost tier (low / medium / high) averaged from each pick.
-- Issues — e.g. marble pushes cost up, dark flooring + dark walls feel
-  dim, dark benchtop + dark cabinetry feels heavy, 3+ premium picks
-  flagged.
-- Missing items — anything the user hasn't chosen yet, with a strong
-  recommendation when lighting is missing.
-- Recommendations — next steps and palette tips.
+Current limitations:
 
-To extend it, edit the rules in `generateSummary()` or add new option
-metadata (cost tier, tone, tags) in `roomData.ts`.
+- The AI is rule-based, not a real model — it follows a small set of hand-written rules.
+- No persistence — selections are lost on reload.
+- No images or 3D previews — text labels only.
+- No automated tests.
+- The catalog is illustrative; not connected to any supplier data.
+- No user accounts, sharing, or collaboration.
 
-## Adding rooms or items
+Possible improvements (in rough priority order):
 
-Everything lives in `src/data/roomData.ts`:
-
-- `ROOMS` — list of room ids, names, icons.
-- `ROOM_ITEMS` — per room, the selection slots and the option list each
-  slot offers.
-
-Add a new option object with `cost`, `tone`, and any `tags` you want the
-AI rules to look for, and it shows up in the UI automatically. If you
-add a new `RoomId`, update the union type at the top of `roomData.ts`
-and TypeScript will tell you everywhere else that needs an entry.
+- **Swap in a real LLM** via a Vercel serverless function that wraps Anthropic or OpenAI. The `Summary` interface stays the same — only `aiSummary.ts` and a new `api/summarize.ts` change.
+- **Add automated tests** with Vitest for the rule engine (it's a pure function — easy to cover) and Vue Test Utils for component behaviour.
+- **Persist selections** — start with `localStorage`, later move to a backend with named "design scenarios" the user can save and revisit.
+- **Image previews** for each material/furniture option, even simple thumbnails.
+- **Export** — generate a PDF or shareable link summarising the chosen scheme.
+- **Room comparison** — view two rooms side-by-side or compare two saved scenarios.
+- **Real catalog integration** — connect to a supplier API for live pricing and availability.

@@ -1,0 +1,23 @@
+{
+  "name": "room-material-selector",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Lightweight Vue 3 + TypeScript prototype for selecting room types, materials and furniture, with a mock AI design summary.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "type-check": "vue-tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "@vue/tsconfig": "^0.5.1",
+    "typescript": "~5.4.0",
+    "vite": "^5.2.0",
+    "vue-tsc": "^2.0.6"
+  }
+}

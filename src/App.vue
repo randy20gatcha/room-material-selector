@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import RoomSelector     from './components/RoomSelector.vue'
+import RoomSelector from './components/RoomSelector.vue'
 import MaterialSelector from './components/MaterialSelector.vue'
 import SelectionSummary from './components/SelectionSummary.vue'
-import AISummary        from './components/AISummary.vue'
+import AISummary from './components/AISummary.vue'
 import type { RoomId, Selections } from './data/roomData'
 
 // Currently chosen room id (e.g. 'kitchen').
@@ -22,15 +22,25 @@ function selectionsFor(id: RoomId | ''): Selections {
 }
 
 // Make sure a bucket exists for whichever room is currently selected.
-watch(roomId, (id) => {
-  if (id && !allSelections.value[id]) allSelections.value[id] = {}
-}, { immediate: true })
+watch(
+  roomId,
+  (id) => {
+    if (id && !allSelections.value[id]) allSelections.value[id] = {}
+  },
+  { immediate: true },
+)
 
-function handleItemUpdate({ key, optionId }: { key: string; optionId: string }): void {
+function handleItemUpdate({
+  key,
+  optionId,
+}: {
+  key: string
+  optionId: string
+}): void {
   if (!roomId.value) return
   const bucket = { ...selectionsFor(roomId.value) }
   if (optionId) bucket[key] = optionId
-  else          delete bucket[key]
+  else delete bucket[key]
   // Reactively replace the inner object so Vue picks up deletions.
   allSelections.value = { ...allSelections.value, [roomId.value]: bucket }
 }
@@ -46,7 +56,15 @@ function handleReset(): void {
     <header class="page-head">
       <div class="brand">
         <div class="brand-mark">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="M3 12 12 4l9 8" />
             <path d="M5 10v10h14V10" />
             <path d="M10 20v-6h4v6" />
@@ -54,7 +72,10 @@ function handleReset(): void {
         </div>
         <div>
           <h1>Room Material Selector</h1>
-          <p>Pick a room, swap materials and furniture, then generate an AI design summary.</p>
+          <p>
+            Pick a room, swap materials and furniture, then generate an AI
+            design summary.
+          </p>
         </div>
       </div>
     </header>
@@ -83,7 +104,10 @@ function handleReset(): void {
     </main>
 
     <footer class="page-foot">
-      <p>Prototype only — the AI summary is rule-based and runs locally.</p>
+      <p>
+        Prototype only — the AI summary is rule-based, runs locally(inside the
+        application only).
+      </p>
     </footer>
   </div>
 </template>

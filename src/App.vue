@@ -105,7 +105,7 @@ function handleReset(): void {
 
     <footer class="page-foot">
       <p>
-        Prototype only — the AI summary is rule-based, runs locally(inside the
+        Prototype only — the AI summary is rule-based, runs locally (inside the
         application only).
       </p>
     </footer>
